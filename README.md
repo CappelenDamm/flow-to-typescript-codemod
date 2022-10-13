@@ -10,10 +10,13 @@
   <br />
 </div>
 
+This project is a fork of Stripe's codemod, and is used to migrate parts of Cappelen Damm's codebase from Flow
+to TypeScript. This repository contains modifications that are written specifically for Cappelen Damm's codebase,
+and the changes may not be applicable to other projects.
 
-> <img src="https://stripe.dev/images/badges/archived.png" width="250">
->
-> This project is provided as-is and is not actively maintained.
+Internally, this migration is done as part of ADA-8640.
+
+---
 
 For more background on Stripe's TypeScript migration, check out our [blog post](https://stripe.com/blog/migrating-to-typescript)!
 
@@ -139,7 +142,7 @@ You can configure the codemod to skip files without a watermark when doing futur
 
 If your codebase follows the pattern of accepting any prop, and then forwarding them to another component like this:
 
-```ts
+```tsx
 const MyComponent = (props: Props) => {
   const { myProp, ...rest } = props;
   return <AnotherComponent test={myProp} {...rest} />
