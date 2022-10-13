@@ -375,6 +375,37 @@ export function transformDeclarations({
         path.node.init = asExpression;
       }
 
+      // querySelector(...) → querySelector<HTMLElement>(...)
+      // querySelectorAll(...) → querySelectorAll<HTMLElement>(...)
+      // This conversion is done because all our selectors are run on HTMLElements
+      // and in many cases we need to access properties that do not exist in the
+      // parent type Element
+      if (
+        path.node.init?.type === "CallExpression" &&
+        path.node.init.callee.type === "MemberExpression" &&
+        t.isIdentifier(path.node.init.callee.property) &&
+        (path.node.init.callee.property.name === "querySelector" ||
+          path.node.init.callee.property.name === "querySelectorAll")
+      ) {
+        path.node.init.typeParameters = t.tsTypeParameterInstantiation([
+          t.tsTypeReference(t.identifier("HTMLElement")),
+        ]);
+      }
+
+      // Remove types from react-redux's connect function
+      // We type this function like this:
+      //   connect<Props, OwnProps, _, _, _, _>(...)
+      // With TypeScript, we can infer the value of OwnProps in a different
+      // way, so the type parameters can be safely removed.
+      if (
+        path.node.init?.type === "CallExpression" &&
+        path.node.init.callee.type === "Identifier" &&
+        path.node.init.callee.name === "connect" &&
+        path.node.init.typeParameters?.params.length === 6
+      ) {
+        path.node.init.typeParameters = null;
+      }
+
       // Look for calls to React.useState and make sure they have a type.
       // Flow may allow this and type the resulting state variable as `empty`
       // which behaves like `any`. TypeScript will throw an error without the type.
